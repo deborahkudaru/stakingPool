@@ -9,12 +9,15 @@ contract Stake {
 
     mapping(address => uint) public beeStakers;
     mapping(address => uint) public booStakers;
+    mapping(address => uint) public rewards;
 
     uint public totalBeeStaked;
     uint public totalBooStaked;
+    uint public rewardRateBee = 10;
+    uint public rewardRateBoo = 5;
 
     error InsufficientFunds();
-    error AmountCanotBeZeroOrLess();
+    error AmountCannotBeZeroOrLess();
     error NotEnoughStake();
     error NotEnoughRewards();
 
@@ -39,8 +42,8 @@ contract Stake {
         }
     }
 
-     function unstakeTokens(uint _amountOfBee, uint _amountOfBoo) external {
-        if (_amountOfBee == 0 && _amountOfBoo == 0) revert AmountCanotBeZeroOrLess();
+    function unstakeTokens(uint _amountOfBee, uint _amountOfBoo) external {
+        if (_amountOfBee == 0 && _amountOfBoo == 0) revert AmountCannotBeZeroOrLess();
         
         if (_amountOfBee > 0) {
             if (beeStakers[msg.sender] < _amountOfBee) revert NotEnoughStake();
@@ -57,7 +60,13 @@ contract Stake {
         }
     }
 
-  function getTotalStaked() external view returns (uint bee, uint boo) {
+    function getRewards(address user) public view returns (uint) {
+        uint beeReward = beeStakers[user] * rewardRateBee;
+        uint booReward = booStakers[user] * rewardRateBoo;
+        return beeReward + booReward;
+    }
+
+    function getTotalStaked() external view returns (uint bee, uint boo) {
         return (totalBeeStaked, totalBooStaked);
     }
 
@@ -65,4 +74,3 @@ contract Stake {
         return (beeStakers[user], booStakers[user]);
     }
 }
-
