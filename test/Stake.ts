@@ -46,7 +46,24 @@ describe("Stake", function () {
   }
 
   describe("Deployment", function () {
-    it("Should balance of", async function () {
+    it("Should send contract tokens successfully", async function () {
+      const { stake, owner, beeTok, booTok, account1, account2 } = await loadFixture(
+        deployStake
+      );
+
+      const stakeAmount = hre.ethers.parseUnits("200", 18);
+
+      await beeTok.approve(stake, stakeAmount);
+
+      await booTok.approve(stake, stakeAmount);
+
+      await stake.stakeTokens(stakeAmount, stakeAmount);
+
+      expect(await beeTok.balanceOf(stake)).to.eq(stakeAmount);
+
+    });
+
+    it("Should stake tokens successfully", async function () {
       const { stake, owner, beeTok, booTok, account1, account2 } = await loadFixture(
         deployStake
       );
