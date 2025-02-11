@@ -33,7 +33,8 @@ describe("Stake", function () {
 
   async function deployStake() {
     // Contracts are deployed using the first signer/account by default
-    const [owner, otherAccount, account1, account2] = await hre.ethers.getSigners();
+    const [owner, otherAccount, account1, account2] =
+      await hre.ethers.getSigners();
 
     const { beeTok } = await deployBeeToken();
 
@@ -47,9 +48,8 @@ describe("Stake", function () {
 
   describe("Deployment", function () {
     it("Should send contract tokens successfully", async function () {
-      const { stake, owner, beeTok, booTok, account1, account2 } = await loadFixture(
-        deployStake
-      );
+      const { stake, owner, beeTok, booTok, account1, account2 } =
+        await loadFixture(deployStake);
 
       const stakeAmount = hre.ethers.parseUnits("200", 18);
 
@@ -60,23 +60,69 @@ describe("Stake", function () {
       await stake.stakeTokens(stakeAmount, stakeAmount);
 
       expect(await beeTok.balanceOf(stake)).to.eq(stakeAmount);
-
+      expect(await booTok.balanceOf(stake)).to.eq(stakeAmount);
     });
 
     it("Should stake tokens successfully", async function () {
-      const { stake, owner, beeTok, booTok, account1, account2 } = await loadFixture(
-        deployStake
-      );
+      const { stake, owner, beeTok, booTok, account1, account2 } =
+        await loadFixture(deployStake);
 
       const stakeAmount = hre.ethers.parseUnits("200", 18);
+      const stakeCoinAmount = hre.ethers.parseUnits("10", 18);
 
       await beeTok.approve(stake, stakeAmount);
-
       await booTok.approve(stake, stakeAmount);
 
       await stake.stakeTokens(stakeAmount, stakeAmount);
 
-      expect(await beeTok.balanceOf(stake)).to.eq(stakeAmount);
+      await beeTok.transfer(account1.address, stakeCoinAmount);
+      await booTok.transfer(account1.address, stakeCoinAmount);
+
+      const balance = await beeTok.balanceOf(account1.address);
+      console.log("Account1 BeeToken Balance:", balance.toString());
+
+      await beeTok.connect(account1).approve(stake, stakeCoinAmount);
+      await booTok.connect(account1).approve(stake, stakeCoinAmount);
+
+      await stake
+        .connect(account1)
+        .stakeTokens(stakeCoinAmount, stakeCoinAmount);
+
+      expect(await stake.beeStakers(account1.address)).to.equal(
+        stakeCoinAmount
+      );
+      expect(await stake.booStakers(account1.address)).to.equal(
+        stakeCoinAmount
+      );
+    });
+
+    it("Should unstake tokens successfully", async function () {
+      const { stake, owner, beeTok, booTok, account1, account2 } =
+        await loadFixture(deployStake);
+
+      const stakeAmount = hre.ethers.parseUnits("200", 18);
+      const stakeCoinAmount = hre.ethers.parseUnits("10", 18);
+
+      await beeTok.approve(stake, stakeAmount);
+      await booTok.approve(stake, stakeAmount);
+
+      await stake.stakeTokens(stakeAmount, stakeAmount);
+
+      await beeTok.transfer(account1.address, stakeCoinAmount);
+      await booTok.transfer(account1.address, stakeCoinAmount);
+
+      const balance = await beeTok.balanceOf(account1.address);
+
+      await beeTok.connect(account1).approve(stake, stakeCoinAmount);
+      await booTok.connect(account1).approve(stake, stakeCoinAmount);
+
+      await stake
+        .connect(account1)
+        .stakeTokens(stakeCoinAmount, stakeCoinAmount);
+
+      await stake
+        .connect(account1)
+        .unstakeTokens(stakeCoinAmount, stakeCoinAmount);
 
     });
   });
