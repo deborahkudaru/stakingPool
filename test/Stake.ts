@@ -75,25 +75,42 @@ describe("Stake", function () {
 
       await stake.stakeTokens(stakeAmount, stakeAmount);
 
-      await beeTok.transfer(account1.address, stakeCoinAmount);
-      await booTok.transfer(account1.address, stakeCoinAmount);
+      await beeTok.transfer(account1, stakeCoinAmount);
+      await booTok.transfer(account1, stakeCoinAmount);
 
-      const balance = await beeTok.balanceOf(account1.address);
-      console.log("Account1 BeeToken Balance:", balance.toString());
+      await beeTok.transfer(account2, stakeCoinAmount);
+      await booTok.transfer(account2, stakeCoinAmount);
+
+      const balance1 = await beeTok.balanceOf(account1.address);
+      console.log("Account1 BeeToken Balance:", balance1);
 
       await beeTok.connect(account1).approve(stake, stakeCoinAmount);
       await booTok.connect(account1).approve(stake, stakeCoinAmount);
+
+      await beeTok.connect(account2).approve(stake, stakeCoinAmount);
+      await booTok.connect(account2).approve(stake, stakeCoinAmount);
 
       await stake
         .connect(account1)
         .stakeTokens(stakeCoinAmount, stakeCoinAmount);
 
-      expect(await stake.beeStakers(account1.address)).to.equal(
+      expect(await stake.beeStakers(account1)).to.equal(
         stakeCoinAmount
       );
-      expect(await stake.booStakers(account1.address)).to.equal(
+      expect(await stake.booStakers(account1)).to.equal(
         stakeCoinAmount
       );
+
+      await stake
+      .connect(account2)
+      .stakeTokens(stakeCoinAmount, stakeCoinAmount);
+
+    expect(await stake.beeStakers(account2)).to.equal(
+      stakeCoinAmount
+    );
+    expect(await stake.booStakers(account2)).to.equal(
+      stakeCoinAmount
+    );
     });
 
     it("Should unstake tokens successfully", async function () {
@@ -108,8 +125,8 @@ describe("Stake", function () {
 
       await stake.stakeTokens(stakeAmount, stakeAmount);
 
-      await beeTok.transfer(account1.address, stakeCoinAmount);
-      await booTok.transfer(account1.address, stakeCoinAmount);
+      await beeTok.transfer(account1, stakeCoinAmount);
+      await booTok.transfer(account1, stakeCoinAmount);
 
       const balance = await beeTok.balanceOf(account1.address);
 
